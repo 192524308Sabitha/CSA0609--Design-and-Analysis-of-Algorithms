@@ -1,0 +1,250 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <stdint.h>
+
+#define NOT_FOUND -1
+
+typedef struct {
+    long long key;
+    int value;
+    int occupied;
+} Entry;
+
+/* 1. Iterative Linear Search */
+int linearSearch(long long a[], int n, long long target,
+                 long long *comparisons) {
+    *comparisons = 0;
+
+    for (int i = 0; i < n; i++) {
+        (*comparisons)++;
+
+        if (a[i] == target)
+            return i;
+    }
+
+    return NOT_FOUND;
+}
+
+/* 2. Recursive Binary Search */
+int binarySearch(long long a[], int low, int high,
+                 long long target, long long *comparisons) {
+
+    if (low > high)
+        return NOT_FOUND;
+
+    int mid = low + (high - low) / 2;
+    (*comparisons)++;
+
+    if (a[mid] == target)
+        return mid;
+
+    if (target < a[mid])
+        return binarySearch(a, low, mid - 1,
+                            target, comparisons);
+
+    return binarySearch(a, mid + 1, high,
+                        target, comparisons);
+}
+
+/* Hash function */
+size_t hashFunction(long long key, size_t capacity) {
+    uint64_t x = (uint64_t)key;
+
+    x ^= x >> 30;
+    x *= UINT64_C(0xbf58476d1ce4e5b9);
+    x ^= x >> 27;
+    x *= UINT64_C(0x94d049bb133111eb);
+    x ^= x >> 31;
+
+    return (size_t)(x % capacity);
+}
+
+/* 3. Build Hash Table */
+Entry *buildHashTable(long long a[], int n, size_t capacity) {
+
+    Entry *table = calloc(capacity, sizeof(Entry));
+
+    if (table == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < n; i++) {
+        size_t index = hashFunction(a[i], capacity);
+
+        while (table[index].occupied)
+            index = (index + 1) % capacity;
+
+        table[index].key = a[i];
+        table[index].value = i;
+        table[index].occupied = 1;
+    }
+
+    return table;
+}
+
+/* Hash Table Search */
+int hashSearch(Entry table[], size_t capacity,
+               long long target, long long *probes) {
+
+    size_t index = hashFunction(target, capacity);
+    *probes = 0;
+
+    while (table[index].occupied) {
+        (*probes)++;
+
+        if (table[index].key == target)
+            return table[index].value;
+
+        index = (index + 1) % capacity;
+    }
+
+    return NOT_FOUND;
+}
+
+/* Comparison function for qsort */
+int compareNumbers(const void *a, const void *b) {
+    long long x = *(const long long *)a;
+    long long y = *(const long long *)b;
+
+    return (x > y) - (x < y);
+}
+
+/* Run experiments */
+void runExperiment(int n) {
+
+    long long *records = malloc(n * sizeof(long long));
+    long long *sorted = malloc(n * sizeof(long long));
+
+    if (records == NULL || sorted == NULL) {
+        printf("Memory allocation failed!\n");
+        free(records);
+        free(sorted);
+        exit(1);
+    }
+
+    for (int i = 0; i < n; i++)
+        records[i] = 1000000000LL + i;
+
+    long long target = records[n - 1];
+    long long absent = 999999999LL;
+    long long comparisons = 0;
+    long long probes = 0;
+
+    clock_t start, end;
+    double linearTime, binaryTime, sortingTime;
+    double hashBuildTime, hashSearchTime;
+
+    printf("\n====================================\n");
+    printf("DATASET SIZE: %d\n", n);
+    printf("====================================\n");
+
+    /* Linear Search */
+    start = clock();
+
+    int linearResult = linearSearch(
+        records, n, target, &comparisons);
+
+    end = clock();
+    linearTime = (double)(end - start) / CLOCKS_PER_SEC;
+
+    printf("\nLINEAR SEARCH\n");
+    printf("Result Index: %d\n", linearResult);
+    printf("Comparisons: %lld\n", comparisons);
+    printf("Search Time: %.6f seconds\n", linearTime);
+
+    /* Binary Search */
+    for (int i = 0; i < n; i++)
+        sorted[i] = records[i];
+
+    start = clock();
+    qsort(sorted, n, sizeof(long long), compareNumbers);
+    end = clock();
+
+    sortingTime = (double)(end - start) / CLOCKS_PER_SEC;
+
+    comparisons = 0;
+    start = clock();
+
+    int binaryResult = binarySearch(
+        sorted, 0, n - 1, target, &comparisons);
+
+    end = clock();
+    binaryTime = (double)(end - start) / CLOCKS_PER_SEC;
+
+    printf("\nRECURSIVE BINARY SEARCH\n");
+    printf("Result Index: %d\n", binaryResult);
+    printf("Comparisons: %lld\n", comparisons);
+    printf("Sorting Time: %.6f seconds\n", sortingTime);
+    printf("Search Time: %.6f seconds\n", binaryTime);
+
+    /* Hash Table */
+    size_t capacity = 1;
+
+    while (capacity < (size_t)n * 2)
+        capacity *= 2;
+
+    start = clock();
+    Entry *table = buildHashTable(records, n, capacity);
+    end = clock();
+
+    hashBuildTime = (double)(end - start) / CLOCKS_PER_SEC;
+
+    start = clock();
+    int hashResult = hashSearch(
+        table, capacity, target, &probes);
+    end = clock();
+
+    hashSearchTime = (double)(end - start) / CLOCKS_PER_SEC;
+
+    printf("\nHASH TABLE SEARCH\n");
+    printf("Result Index: %d\n", hashResult);
+    printf("Probes: %lld\n", probes);
+    printf("Build Time: %.6f seconds\n", hashBuildTime);
+    printf("Search Time: %.6f seconds\n", hashSearchTime);
+
+    /* Test unsuccessful searches */
+    comparisons = 0;
+    int test1 = linearSearch(records, n, absent, &comparisons);
+
+    comparisons = 0;
+    int test2 = binarySearch(
+        sorted, 0, n - 1, absent, &comparisons);
+
+    int test3 = hashSearch(table, capacity, absent, &probes);
+
+    printf("\nCORRECTNESS TESTING\n");
+
+    if (linearResult == n - 1 &&
+        binaryResult == n - 1 &&
+        hashResult == n - 1 &&
+        test1 == NOT_FOUND &&
+        test2 == NOT_FOUND &&
+        test3 == NOT_FOUND) {
+
+        printf("All Successful Search Tests: PASSED\n");
+        printf("All Unsuccessful Search Tests: PASSED\n");
+    } else {
+        printf("TEST FAILED\n");
+    }
+
+    free(table);
+    free(records);
+    free(sorted);
+}
+
+int main() {
+
+    int sizes[] = {1000, 10000, 100000, 1000000};
+
+    printf("STUDENT RECORD SEARCH SYSTEM\n");
+    printf("DESIGN AND ANALYSIS OF ALGORITHMS\n");
+
+    for (int i = 0; i < 4; i++) {
+        runExperiment(sizes[i]);
+    }
+
+    return 0;
+}
