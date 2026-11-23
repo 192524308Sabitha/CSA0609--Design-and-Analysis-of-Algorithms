@@ -1,0 +1,23 @@
+def maxmin(a, low, high):
+    if low == high:
+        return a[low], a[low]
+
+    if high == low + 1:
+        if a[low] < a[high]:
+            return a[low], a[high]
+        return a[high], a[low]
+
+    mid = (low + high) // 2
+
+    mn1, mx1 = maxmin(a, low, mid)
+    mn2, mx2 = maxmin(a, mid + 1, high)
+
+    return min(mn1, mn2), max(mx1, mx2)
+
+
+a = list(map(int, input("Enter numbers: ").split()))
+
+mn, mx = maxmin(a, 0, len(a) - 1)
+
+print("Minimum:", mn)
+print("Maximum:", mx)
