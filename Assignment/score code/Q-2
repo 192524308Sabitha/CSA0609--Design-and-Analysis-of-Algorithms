@@ -1,0 +1,19 @@
+def sequential_search(records, target):
+    comparisons = 0
+
+    for i, record in enumerate(records):
+        comparisons += 1
+        if record["tool_id"] == target:
+            return record, comparisons
+
+    return None, comparisons
+
+
+records = [
+    {"tool_id": "T-101", "technician": "Asha", "bay": "B1"},
+    {"tool_id": "T-184", "technician": "Ravi", "bay": "B3"},
+    {"tool_id": "T-205", "technician": "Meena", "bay": "B2"}
+]
+
+print(sequential_search(records, "T-184"))
+print(sequential_search(records, "T-999"))
