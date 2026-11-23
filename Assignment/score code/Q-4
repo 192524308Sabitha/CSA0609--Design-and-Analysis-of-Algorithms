@@ -1,0 +1,35 @@
+from math import hypot
+
+
+def closest_pair(points):
+    if len(points) < 2:
+        return None, 0
+
+    best_pair = None
+    best_distance = float("inf")
+    calculations = 0
+
+    for i in range(len(points) - 1):
+        for j in range(i + 1, len(points)):
+            calculations += 1
+
+            d = hypot(
+                points[i][0] - points[j][0],
+                points[i][1] - points[j][1]
+            )
+
+            if d < best_distance:
+                best_distance = d
+                best_pair = (points[i], points[j])
+
+    return (best_pair, best_distance), calculations
+
+
+for n in [10, 100, 1000]:
+    points = [(i, (i * 37) % 101) for i in range(n)]
+
+    result, count = closest_pair(points)
+
+    print("n =", n,
+          "pairs/distance calculations =", count,
+          "result =", result)
