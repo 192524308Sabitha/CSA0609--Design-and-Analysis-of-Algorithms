@@ -1,0 +1,18 @@
+a = list(map(int, input("Enter sorted numbers: ").split()))
+x = int(input("Enter target: "))
+
+low = 0
+high = len(a) - 1
+
+while low <= high:
+    mid = (low + high) // 2
+
+    if a[mid] == x:
+        print("Found at index", mid)
+        break
+    elif x < a[mid]:
+        high = mid - 1
+    else:
+        low = mid + 1
+else:
+    print("Not found")
