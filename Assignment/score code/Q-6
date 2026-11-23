@@ -1,0 +1,38 @@
+def exhaustive_knapsack(packages, capacity):
+    n = len(packages)
+
+    best_value = 0
+    best_items = []
+    candidates = 0
+
+    for mask in range(1 << n):
+        candidates += 1
+
+        total_weight = 0
+        total_value = 0
+        chosen = []
+
+        for i, (pid, weight, value) in enumerate(packages):
+            if mask & (1 << i):
+                total_weight += weight
+                total_value += value
+                chosen.append(pid)
+
+        if total_weight <= capacity and total_value > best_value:
+            best_value = total_value
+            best_items = chosen
+
+    return best_items, best_value, candidates
+
+
+packages = [
+    ("P1", 2, 6),
+    ("P2", 3, 8),
+    ("P3", 4, 9),
+    ("P4", 5, 10)
+]
+
+print(exhaustive_knapsack(packages, capacity=7))
+
+for n in [10, 15, 20]:
+    print(n, "candidate subsets =", 2 ** n)
