@@ -1,0 +1,32 @@
+def brute_force_match(text, pattern):
+    n, m = len(text), len(pattern)
+    comparisons = 0
+
+    if m == 0:
+        return 0, comparisons
+
+    for i in range(n - m + 1):
+        j = 0
+
+        while j < m:
+            comparisons += 1
+
+            if text[i + j] != pattern[j]:
+                break
+
+            j += 1
+
+        if j == m:
+            return i, comparisons
+
+    return -1, comparisons
+
+
+tests = [
+    ("ABCDEF", "AB"),
+    ("AAAAAAAAAA", "AAAAB"),
+    ("COMPUTER", "XYZ")
+]
+
+for text, pattern in tests:
+    print(text, pattern, brute_force_match(text, pattern))
