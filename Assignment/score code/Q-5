@@ -1,0 +1,39 @@
+def brute_force_hull_edges(points):
+    n = len(points)
+    edges = set()
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            positive = negative = False
+
+            px, py = points[i]
+            qx, qy = points[j]
+
+            for k in range(n):
+                if k == i or k == j:
+                    continue
+
+                rx, ry = points[k]
+
+                cross = ((qx - px) * (ry - py)
+                         - (qy - py) * (rx - px))
+
+                if cross > 0:
+                    positive = True
+                elif cross < 0:
+                    negative = True
+
+            if not (positive and negative):
+                edges.add((points[i], points[j]))
+
+    return edges
+
+
+test1 = [(0, 0), (4, 0), (4, 4),
+         (0, 4), (2, 2), (1, 1)]
+
+test2 = [(0, 0), (2, 1), (4, 0),
+         (3, 3), (1, 4), (2, 2)]
+
+print("Test 1 edges:", brute_force_hull_edges(test1))
+print("Test 2 edges:", brute_force_hull_edges(test2))
