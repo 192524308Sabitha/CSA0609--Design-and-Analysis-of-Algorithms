@@ -1,0 +1,26 @@
+def subset_sums(arr):
+    sums = [0]
+
+    for x in arr:
+        sums += [s + x for s in sums]
+
+    return sums
+
+
+def meet_in_middle(a, target):
+    mid = len(a) // 2
+
+    left = subset_sums(a[:mid])
+    right = set(subset_sums(a[mid:]))
+
+    for s in left:
+        if target - s in right:
+            return True
+
+    return False
+
+
+a = list(map(int, input("Enter values: ").split()))
+t = int(input("Enter target sum: "))
+
+print("Subset exists:", meet_in_middle(a, t))
