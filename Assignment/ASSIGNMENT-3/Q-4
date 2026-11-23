@@ -1,0 +1,63 @@
+def add(A, B):
+    n = len(A)
+    return [[A[i][j] + B[i][j] for j in range(n)]
+            for i in range(n)]
+
+
+def sub(A, B):
+    n = len(A)
+    return [[A[i][j] - B[i][j] for j in range(n)]
+            for i in range(n)]
+
+
+def conventional(A, B):
+    n = len(A)
+    return [
+        [sum(A[i][k] * B[k][j] for k in range(n))
+         for j in range(n)]
+        for i in range(n)
+    ]
+
+
+def strassen(A, B):
+    n = len(A)
+
+    if n == 1:
+        return [[A[0][0] * B[0][0]]]
+
+    h = n // 2
+
+    split = lambda X: (
+        [r[:h] for r in X[:h]],
+        [r[h:] for r in X[:h]],
+        [r[:h] for r in X[h:]],
+        [r[h:] for r in X[h:]]
+    )
+
+    a, b, c, d = split(A)
+    e, f, g, hb = split(B)
+
+    m1 = strassen(add(a, d), add(e, hb))
+    m2 = strassen(add(c, d), e)
+    m3 = strassen(a, sub(f, hb))
+    m4 = strassen(d, sub(g, e))
+    m5 = strassen(add(a, b), hb)
+    m6 = strassen(sub(c, a), add(e, f))
+    m7 = strassen(sub(b, d), add(g, hb))
+
+    c11 = add(sub(add(m1, m4), m5), m7)
+    c12 = add(m3, m5)
+    c21 = add(m2, m4)
+    c22 = add(add(sub(m1, m2), m3), m6)
+
+    top = [c11[i] + c12[i] for i in range(len(c11))]
+    bot = [c21[i] + c22[i] for i in range(len(c21))]
+
+    return top + bot
+
+
+A = [[1, 2], [3, 4]]
+B = [[5, 6], [7, 8]]
+
+print("Conventional:", conventional(A, B))
+print("Strassen:", strassen(A, B))
